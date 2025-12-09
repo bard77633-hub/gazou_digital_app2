@@ -1,0 +1,5 @@
+{
+  "name": "Digital Image Lab",
+  "description": "An interactive educational tool for Information Study I students to experience image digitization: sampling, quantization, and encoding. Visualize how resolution and color depth affect image quality and data size.",
+  "requestFramePermissions": []
+}
