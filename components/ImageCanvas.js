@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Maximize, Minimize } from 'lucide-react';
 import { html } from '../react-utils.js';
 
 export const ImageCanvas = ({
   imageSrc,
   samplingRate,
   quantizationLevels,
+  viewMode = 'fit', // 'fit' or 'actual'
   onStatsUpdate,
   onPixelHover,
   onPixelClick
@@ -13,7 +13,6 @@ export const ImageCanvas = ({
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [originalImage, setOriginalImage] = useState(null);
-  const [viewMode, setViewMode] = useState('fit'); // 'fit' or 'actual'
 
   // Helper to calculate bits needed for levels
   const getBitsPerChannel = (levels) => Math.ceil(Math.log2(levels));
@@ -171,40 +170,22 @@ export const ImageCanvas = ({
     onPixelHover(null);
   };
 
-  const toggleViewMode = () => {
-    setViewMode(prev => prev === 'fit' ? 'actual' : 'fit');
-  };
-
   return html`
     <div 
       ref=${containerRef} 
-      className=${`relative w-full h-full bg-slate-100 rounded-lg border border-slate-300 ${viewMode === 'fit' ? 'overflow-hidden flex items-center justify-center' : 'overflow-auto grid place-items-center'}`}
+      className=${`relative w-full h-full bg-slate-100 ${viewMode === 'fit' ? 'overflow-hidden flex items-center justify-center' : 'overflow-auto grid place-items-center'}`}
       style=${{ minHeight: '300px' }}
     >
       ${!originalImage && html`<p className="text-slate-400 absolute">Loading...</p>`}
       
       <canvas
         ref=${canvasRef}
-        className=${`shadow-md active:cursor-grabbing ${viewMode === 'fit' ? 'max-w-full max-h-full object-contain w-full h-full' : ''}`}
+        className=${`shadow-sm bg-white ${viewMode === 'fit' ? 'max-w-full max-h-full object-contain w-full h-full' : ''}`}
         style=${{ imageRendering: 'pixelated' }}
         onMouseMove=${handleMouseMove}
         onMouseLeave=${handleMouseLeave}
         onClick=${handleClick}
       />
-
-      <!-- View Toggle Button (Floating) -->
-      <div className="absolute bottom-4 right-4 flex gap-2 pointer-events-auto z-10">
-         <button
-            onClick=${toggleViewMode}
-            className="bg-white/90 backdrop-blur border border-slate-200 shadow-sm text-slate-700 text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-white hover:text-blue-600 transition-colors"
-            title=${viewMode === 'fit' ? "原寸サイズで表示" : "画面に合わせて拡大"}
-         >
-            ${viewMode === 'fit' 
-              ? html`<${Minimize} className="w-3.5 h-3.5" /> 原寸表示` 
-              : html`<${Maximize} className="w-3.5 h-3.5" /> 拡大表示`
-            }
-         </button>
-      </div>
     </div>
   `;
 };

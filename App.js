@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, Image as ImageIcon, Sliders, MonitorPlay } from 'lucide-react';
+import { Upload, Image as ImageIcon, Sliders, MonitorPlay, Maximize, Minimize } from 'lucide-react';
 import { html } from './react-utils.js';
 import { ImageCanvas } from './components/ImageCanvas.js';
 import { ExplanationPanel } from './components/ExplanationPanel.js';
@@ -13,6 +13,7 @@ const App = () => {
   const [samplingRate, setSamplingRate] = useState(1);
   const [quantizationLevels, setQuantizationLevels] = useState(256);
   const [isEncodingVisible, setIsEncodingVisible] = useState(false);
+  const [viewMode, setViewMode] = useState('fit'); // 'fit' or 'actual'
   const [stats, setStats] = useState({
     width: 0, height: 0, samplingRate: 1, quantizationLevels: 256, bitsPerChannel: 8, estimatedSizeInBytes: 0
   });
@@ -57,6 +58,10 @@ const App = () => {
       // Lock the current pixel
       setLockedPixel(data);
     }
+  };
+
+  const toggleViewMode = () => {
+    setViewMode(prev => prev === 'fit' ? 'actual' : 'fit');
   };
 
   const samplingOptions = [1, 2, 4, 8, 16, 32, 64];
@@ -176,26 +181,43 @@ const App = () => {
 
           <!-- Center: Canvas Area -->
           <section className="flex-1 bg-slate-100 p-6 flex flex-col relative overflow-hidden">
-            <div className="flex-1 flex flex-col min-h-0">
-               <div className="flex-1 relative">
+            <div className="flex-1 flex flex-col min-h-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+               <!-- Main Image Area -->
+               <div className="flex-1 relative overflow-hidden bg-slate-100">
                  <${ImageCanvas} 
                     imageSrc=${imageSrc} 
                     samplingRate=${samplingRate}
                     quantizationLevels=${quantizationLevels}
+                    viewMode=${viewMode}
                     onStatsUpdate=${setStats}
                     onPixelHover=${handlePixelHover}
                     onPixelClick=${handlePixelClick}
                  />
-                 
-                 <!-- Overlay Labels -->
-                 <div className="absolute bottom-4 left-4 flex gap-2 pointer-events-none">
-                   <div className="bg-black/70 backdrop-blur text-white text-xs px-3 py-1 rounded-full">
-                     標本化: ${samplingRate}pxブロック
-                   </div>
-                   <div className="bg-black/70 backdrop-blur text-white text-xs px-3 py-1 rounded-full">
-                     量子化: ${quantizationLevels}階調 (${Math.ceil(Math.log2(quantizationLevels))}bit)
-                   </div>
-                 </div>
+               </div>
+
+               <!-- Footer Control Bar -->
+               <div className="h-14 border-t border-slate-200 bg-white flex items-center justify-between px-4 shrink-0 z-10">
+                  <!-- Info Badges -->
+                  <div className="flex gap-2 items-center">
+                     <div className="bg-slate-100 border border-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-full font-medium">
+                       標本化: ${samplingRate}pxブロック
+                     </div>
+                     <div className="bg-slate-100 border border-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-full font-medium">
+                       量子化: ${quantizationLevels}階調 (${Math.ceil(Math.log2(quantizationLevels))}bit)
+                     </div>
+                  </div>
+
+                  <!-- View Mode Toggle -->
+                  <button
+                    onClick=${toggleViewMode}
+                    className="hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs px-3 py-1.5 rounded-md flex items-center gap-2 transition-colors font-medium"
+                    title=${viewMode === 'fit' ? "原寸サイズで表示" : "画面に合わせて拡大"}
+                  >
+                    ${viewMode === 'fit' 
+                      ? html`<${Minimize} className="w-3.5 h-3.5" /> 原寸表示` 
+                      : html`<${Maximize} className="w-3.5 h-3.5" /> 拡大表示`
+                    }
+                  </button>
                </div>
             </div>
           </section>
